@@ -83,14 +83,25 @@ np.random.seed(0)
 
 def linear_assignment(cost_matrix):
   try:
+    # lap is a linear assignment problem solver using Jonker-Volgenant algorithm for dense (LAPJV) or sparse (LAPMOD) matrices.
     import lap
+    # The Jonker-Volgenant algorithm is much faster than the famous Hungarian algorithm for the Linear Assignment Problem (LAP)
     _, x, y = lap.lapjv(cost_matrix, extend_cost=True)
     return np.array([[y[i],i] for i in x if i >= 0]) #
   except ImportError:
+    # The method used is the Hungarian algorithm, also known as the Munkres or Kuhn-Munkres algorithm.
     from scipy.optimize import linear_sum_assignment
-    x, y = linear_sum_assignment(cost_matrix)
+    x, y = linear_sum_assignment(cost_matrix) # row_ind, col_ind : array
     return np.array(list(zip(x, y)))
 
+'''
+Hungarian Method References:
+[1] Harold W. Kuhn. The Hungarian Method for the assignment problem. Naval Research Logistics Quarterly, 2:83-97, 1955.
+[2] Harold W. Kuhn. Variants of the Hungarian method for assignment problems. Naval Research Logistics Quarterly, 3: 253-258, 1956.
+[3] Munkres, J. Algorithms for the Assignment and Transportation Problems. J. SIAM, 5(1):32-38, March, 1957.
+[4] https://en.wikipedia.org/wiki/Hungarian_algorithm
+[5] http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html
+'''
 
 def iou_batch(bb_test, bb_gt):
   """
