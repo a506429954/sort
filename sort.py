@@ -95,6 +95,12 @@ def linear_assignment(cost_matrix):
     return np.array(list(zip(x, y)))
 
 '''
+The Jonker-Volgenant algorithm References:
+[1] https://github.com/gatagat/lap
+[2] R. Jonker and A. Volgenant, "A Shortest Augmenting Path Algorithm for Dense and Sparse Linear Assignment Problems", Computing 38, 325-340 (1987)
+[3] A. Volgenant, "Linear and Semi-Assignment Problems: A Core Oriented Approach", Computer Ops Res. 23, 917-932 (1996)
+[4] http://www.assignmentproblems.com/LAPJV.htm
+
 Hungarian Method References:
 [1] Harold W. Kuhn. The Hungarian Method for the assignment problem. Naval Research Logistics Quarterly, 2:83-97, 1955.
 [2] Harold W. Kuhn. Variants of the Hungarian method for assignment problems. Naval Research Logistics Quarterly, 3: 253-258, 1956.
