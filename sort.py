@@ -15,21 +15,68 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-#111
+'''
+__future__将新的python版本的特性引入到当前版本中
+python 2.x : print "Hello World"
+python 3.x : print("Hello World")
+如果你想用python2.x体验python3.x的写法，就可以使用 from __future__ import print_function实现
+'''
 from __future__ import print_function
 
 import os
 import numpy as np
 import matplotlib
+
+'''
+Reference: https://matplotlib.org/faq/usage_faq.html
+If your script depends on a specific backend you can use the use() function
+import matplotlib
+matplotlib.use('PS')
+
+If you use the use() function, this must be done before importing matplotlib.pyplot
+Calling use() after pyplot has been imported will have no effect.
+Using use() will require changes in your code if users want to use a different backend.
+Therefore, you should avoid explicitly calling use() unless absolutely necessary
+
+Backend name specifications are not case-sensitive; e.g. "TkAgg" and "tkagg" are equivalent.
+
+If you want to write graphical user interfaces, or a web application server (Matplotlib in a
+web application server), or need a better understanding of what is going on, read on. To make
+things a little more customizable for graphical user interfaces, matplotlib seperates the concept
+of the renderer (the thing that actually does the drawing) from the canvas (the place where the drawing
+goes). The canonical renderer for user interfaces is Agg which uses the Anti-Grain Geometry C++ library
+to make a raster (pixel) image of the figure. All of the uuser interfaces except macosx can be used with
+agg rendering, e.g. WXAgg, GTKAgg, QT4Agg, QT5Agg, TkAgg. 
+
+TkAgg: Agg rendering to a Tk canvas (resuqire TkInter)
+
+Tk: 
+Tk is a graphical user interface for Tcl and many other dynamic languages. It can produce rich, native 
+applications that run unchanged across Windows, Mac OS X, Linux and more.
+
+TkInter:Tkinter is Python's de-facto standard GUI (Graphical User Interface) package. It is a thin 
+object-oriented layer on top of Tcl/Tk. Tkinter is not the only GuiProgramming toolkit for Python. 
+It is however the most commonly used one.
+'''
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+
 from skimage import io
 
-import glob
-import time
-import argparse
-from filterpy.kalman import KalmanFilter
+import glob  # Reference: https://docs.python.org/3/library/glob.html
+import time  # Reference: https://www.programiz.com/python-programming/time
+import argparse  # Reference: https://docs.python.org/3/library/argparse.html
+
+'''
+FilterPy is a Python library that implements a number of Bayesian filter, most notably Kalman filters.
+1. KalmanFilter
+2. Extended Kalman Filter
+3. Unscented Kalman Filter
+4. Ensemble Kalman Filter
+5. ...
+'''
+from filterpy.kalman import KalmanFilter  # References: https://filterpy.readthedocs.io/en/latest/
 
 np.random.seed(0)
 
