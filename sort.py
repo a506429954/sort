@@ -138,7 +138,7 @@ def convert_bbox_to_z(bbox):
   h = bbox[3] - bbox[1]
   x = bbox[0] + w/2.
   y = bbox[1] + h/2.
-  s = w * h    #scale is just area
+  s = w * h    # scale is just area
   r = w / float(h)
   return np.array([x, y, s, r]).reshape((4, 1))
 
@@ -176,12 +176,12 @@ class KalmanBoxTracker(object):
     self.kf.Q[-1,-1] *= 0.01
     self.kf.Q[4:,4:] *= 0.01
 
-    self.kf.x[:4] = convert_bbox_to_z(bbox)
+    self.kf.x[:4] = convert_bbox_to_z(bbox)  # [x1,y1,x2,y2] to [x,y,s,r] (shape: (4,1))
     self.time_since_update = 0
     self.id = KalmanBoxTracker.count
     KalmanBoxTracker.count += 1
     self.history = []
-    self.hits = 0
+    self.hits = 0 
     self.hit_streak = 0
     self.age = 0
 
@@ -199,6 +199,9 @@ class KalmanBoxTracker(object):
     """
     Advances the state vector and returns the predicted bounding box estimate.
     """
+    
+    # self.kf.x = [x,y,s,r,x_dot,y_dot,s_dot]
+    # s_dot + s <= 0, then s_dot = 0
     if((self.kf.x[6]+self.kf.x[2])<=0):
       self.kf.x[6] *= 0.0
     self.kf.predict()
@@ -206,14 +209,14 @@ class KalmanBoxTracker(object):
     if(self.time_since_update>0):
       self.hit_streak = 0
     self.time_since_update += 1
-    self.history.append(convert_x_to_bbox(self.kf.x))
-    return self.history[-1]
+    self.history.append(convert_x_to_bbox(self.kf.x))  # [x,y,s,r] => [x1,y1,x2,y2]
+    return self.history[-1]  # newest predicted bounding box coordinates
 
   def get_state(self):
     """
     Returns the current bounding box estimate.
     """
-    return convert_x_to_bbox(self.kf.x)
+    return convert_x_to_bbox(self.kf.x)  # [x,y,s,r] => [x1,y1,x2,y2]
 
 
 def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
@@ -224,15 +227,28 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   """
   if(len(trackers)==0):
     return np.empty((0,2),dtype=int), np.arange(len(detections)), np.empty((0,5),dtype=int)
+    # return matches, unmatched_detections, unmatched_trackers
 
+  # Computes IOU between two bboxes in the form [x1,y1,x2,y2]
+  # Assignment cost matrix
   iou_matrix = iou_batch(detections, trackers)
-
+    
   if min(iou_matrix.shape) > 0:
     a = (iou_matrix > iou_threshold).astype(np.int32)
     if a.sum(1).max() == 1 and a.sum(0).max() == 1:
         matched_indices = np.stack(np.where(a), axis=1)
     else:
-      matched_indices = linear_assignment(-iou_matrix)
+        '''
+        In assigning detections to existing targets, each target’s
+        bounding box geometry is estimated by predicting its new
+        location in the current frame. 
+        
+        The assignment cost matrix is
+        then computed as the intersection-over-union (IOU) distance
+        between each detection and all predicted bounding boxes
+        from the existing targets.
+        '''
+        matched_indices = linear_assignment(-iou_matrix)
   else:
     matched_indices = np.empty(shape=(0,2))
 
@@ -240,6 +256,7 @@ def associate_detections_to_trackers(detections,trackers,iou_threshold = 0.3):
   for d, det in enumerate(detections):
     if(d not in matched_indices[:,0]):
       unmatched_detections.append(d)
+    
   unmatched_trackers = []
   for t, trk in enumerate(trackers):
     if(t not in matched_indices[:,1]):
