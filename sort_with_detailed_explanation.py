@@ -292,24 +292,25 @@ class Sort(object):
   def update(self, dets=np.empty((0, 5))):
     """
     Params:
-      dets - a numpy array of detections in the format [[x1,y1,x2,y2,score],[x1,y1,x2,y2,score],...]
-    Requires: this method must be called once for each frame even with empty detections (use np.empty((0, 5)) for frames without detections).
-    Returns the a similar array, where the last column is the object ID.
-
-    NOTE: The number of objects returned may differ from the number of detections provided.
+    dets: a numpy array of dettections in the format [[x1,y1,x2,y2,score], [x1,y1,x2,y2,score],...]
+    Requires: this method must be called once for each frame even with empty detections (use np.empty((0,5)) for frames without detections).
+    Returns a similar array, where the last column is the object ID.
+    
+    NOTE: 'The number of objects returned' may differ from 'the number of detections' provided.
     """
     self.frame_count += 1
+    
     # get predicted locations from existing trackers.
     trks = np.zeros((len(self.trackers), 5))
     to_del = []
     ret = []
     for t, trk in enumerate(trks):
-      pos = self.trackers[t].predict()[0]
+      pos = self.trackers[t].predict()[0]  # ???
       trk[:] = [pos[0], pos[1], pos[2], pos[3], 0]
-      if np.any(np.isnan(pos)):
+      if np.any(np.isnan(pos)):  # To check if there is nan in pos, as when np.isnan(pos) has True, then np.any(np.isnan(pos)) is True
         to_del.append(t)
     trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
-    for t in reversed(to_del):
+    for t in reversed(to_del):  # list_reverseiterator
       self.trackers.pop(t)
     matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets,trks, self.iou_threshold)
 
@@ -357,26 +358,27 @@ if __name__ == '__main__':
   phase = args.phase
   total_time = 0.0
   total_frames = 0
-  colours = np.random.rand(32, 3) #used only for display
+  colours = np.random.rand(32, 3)  # used only for display
   if(display):
     if not os.path.exists('mot_benchmark'):
       print('\n\tERROR: mot_benchmark link not found!\n\n    Create a symbolic link to the MOT benchmark\n    (https://motchallenge.net/data/2D_MOT_2015/#download). E.g.:\n\n    $ ln -s /path/to/MOT2015_challenge/2DMOT2015 mot_benchmark\n\n')
       exit()
-    plt.ion()
+    plt.ion()  # turn the interactive mode on.
     fig = plt.figure()
     ax1 = fig.add_subplot(111, aspect='equal')
 
   if not os.path.exists('output'):
     os.makedirs('output')
-  pattern = os.path.join(args.seq_path, phase, '*', 'det', 'det.txt')
-  for seq_dets_fn in glob.glob(pattern):
-    mot_tracker = Sort(max_age=args.max_age, 
-                       min_hits=args.min_hits,
-                       iou_threshold=args.iou_threshold) #create instance of the SORT tracker
-    seq_dets = np.loadtxt(seq_dets_fn, delimiter=',')
-    seq = seq_dets_fn[pattern.find('*'):].split('/')[0]
+  pattern = os.path.join(args.seq_path, phase, '*', 'det', 'det.txt')  # glob.glob("*/...")中的*代表下一层文件夹
+  for seq_dets_fn in glob.glob(pattern):  # glob.glob(path) : 匹配所有的符合条件的文件，并将其以list的形式返回
+    # create instance of the SORT tracker
+    mot_tracker = Sort(max_age=args.max_age,  # Maximum number of frames to keep alive a track without associated detections
+                       min_hits=args.min_hits,  # Minimum number of associated detections before track is initialised
+                       iou_threshold=args.iou_threshold) 
+    seq_dets = np.loadtxt(seq_dets_fn, delimiter=',')  # Load data from a text file. Each row in the text file must have the same number of values.
+    seq = seq_dets_fn[pattern.find('*'):].split('/')[0] # ???
     
-    with open('output/%s.txt'%(seq),'w') as out_file:
+    with open('output/%s.txt'%(seq),'w') as out_file: 
       print("Processing %s."%(seq))
       for frame in range(int(seq_dets[:,0].max())):
         frame += 1 #detection and frame numbers begin at 1
